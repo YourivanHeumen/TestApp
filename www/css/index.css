@@ -122,3 +122,7 @@ h1 {
 .custom-label-flipswitch.ui-flipswitch .ui-flipswitch-off {
     text-indent: 0.5em;
 }
+
+#popupMenu {
+    float: right;
+}
