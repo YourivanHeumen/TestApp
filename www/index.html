@@ -21,57 +21,118 @@
 -->
 <html>
     <head>
-        <meta charset="utf-8" />
-        <meta name="format-detection" content="telephone=no" />
-        <meta name="msapplication-tap-highlight" content="no" />
-        <!-- WARNING: for iOS 7, remove the width=device-width and height=device-height attributes. See https://issues.apache.org/jira/browse/CB-4323 -->
-        <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
-        <link rel="stylesheet" type="text/css" href="css/index.css" />
-        <!-- Include meta tag to ensure proper rendering and touch zooming -->
-        <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="utf-8" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="msapplication-tap-highlight" content="no" />
+    <!-- WARNING: for iOS 7, remove the width=device-width and height=device-height attributes. See https://issues.apache.org/jira/browse/CB-4323 -->
+    <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
+    <link rel="stylesheet" type="text/css" href="css/index.css" />
+    <!-- Include meta tag to ensure proper rendering and touch zooming -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <!-- Include jQuery Mobile stylesheets -->
-        <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css">
+    <!-- Include jQuery Mobile stylesheets -->
+    <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css">
 
-        <!-- Include the jQuery library -->
-        <script src="http://code.jquery.com/jquery-1.11.2.min.js"></script>
+    <!-- Include the jQuery library -->
+    <script src="http://code.jquery.com/jquery-1.11.2.min.js"></script>
 
-        <!-- Include the jQuery Mobile library -->
-        <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
-        <script type="text/javascript" charset="utf-8">
+    <!-- Include the jQuery Mobile library -->
+    <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+    <script type="text/javascript" charset="utf-8">
 
-        // Wait for device API libraries to load
-        //
-        document.addEventListener("deviceready", onDeviceReady, false);
+    var pictureSource;   // picture source
+    var destinationType; // sets the format of returned value
 
-        // device APIs are available
-        //
-        function onDeviceReady() {
-            navigator.geolocation.getCurrentPosition(onSuccess, onError);
-        }
+    // Wait for device API libraries to load
+    //
+    document.addEventListener("deviceready",onDeviceReady,false);
 
-        // onSuccess Geolocation
-        //
-        function onSuccess(position) {
-            var element = document.getElementById('geolocation');
-            if (position.coords.latitude > 51.6850000 && position.coords.latitude < 51.6900000 && position.coords.longitude > 5.2860000 && position.coords.longitude < 5.2890000) 
-            {
-                element.innerHTML = 'Je bent op school';
-            } else {
-                element.innerHTML = 'Je bent niet op school';
-            }
-        }
+    // device APIs are available
+    //
+    function onDeviceReady() {
+        pictureSource=navigator.camera.PictureSourceType;
+        destinationType=navigator.camera.DestinationType;
+    }
 
-        // onError Callback receives a PositionError object
-        //
-        function onError(error) {
-            alert('code: '    + error.code    + '\n' +
-                  'message: ' + error.message + '\n');
-        }
+    // Called when a photo is successfully retrieved
+    //
+    function onPhotoDataSuccess(imageData) {
+      // Uncomment to view the base64-encoded image data
+      // console.log(imageData);
 
-        </script>
-    </head>
-    <body onload="onDeviceReady()">
-        <p id="geolocation">Finding geolocation...</p>
-    </body>
+      // Get image handle
+      //
+      var smallImage = document.getElementById('smallImage');
+
+      // Unhide image elements
+      //
+      smallImage.style.display = 'block';
+
+      // Show the captured photo
+      // The in-line CSS rules are used to resize the image
+      //
+      smallImage.src = "data:image/jpeg;base64," + imageData;
+    }
+
+    // Called when a photo is successfully retrieved
+    //
+    function onPhotoURISuccess(imageURI) {
+      // Uncomment to view the image file URI
+      // console.log(imageURI);
+
+      // Get image handle
+      //
+      var largeImage = document.getElementById('largeImage');
+
+      // Unhide image elements
+      //
+      largeImage.style.display = 'block';
+
+      // Show the captured photo
+      // The in-line CSS rules are used to resize the image
+      //
+      largeImage.src = imageURI;
+    }
+
+    // A button will call this function
+    //
+    function capturePhoto() {
+      // Take picture using device camera and retrieve image as base64-encoded string
+      navigator.camera.getPicture(onPhotoDataSuccess, onFail, { quality: 50,
+        destinationType: destinationType.DATA_URL });
+    }
+
+    // A button will call this function
+    //
+    function capturePhotoEdit() {
+      // Take picture using device camera, allow edit, and retrieve image as base64-encoded string
+      navigator.camera.getPicture(onPhotoDataSuccess, onFail, { quality: 20, allowEdit: true,
+        destinationType: destinationType.DATA_URL });
+    }
+
+    // A button will call this function
+    //
+    function getPhoto(source) {
+      // Retrieve image file location from specified source
+      navigator.camera.getPicture(onPhotoURISuccess, onFail, { quality: 50,
+        destinationType: destinationType.FILE_URI,
+        sourceType: source });
+    }
+
+    // Called if something bad happens.
+    //
+    function onFail(message) {
+      alert('Failed because: ' + message);
+    }
+
+    </script>
+  </head>
+  <body>
+    <button onclick="capturePhoto();">Capture Photo</button> <br>
+    <button onclick="capturePhotoEdit();">Capture Editable Photo</button> <br>
+    <button onclick="getPhoto(pictureSource.PHOTOLIBRARY);">From Photo Library</button><br>
+    <button onclick="getPhoto(pictureSource.SAVEDPHOTOALBUM);">From Photo Album</button><br>
+    <img style="display:none;width:60px;height:60px;" id="smallImage" src="" />
+    <img style="display:none;" id="largeImage" src="" />
+  </body>
 </html>
