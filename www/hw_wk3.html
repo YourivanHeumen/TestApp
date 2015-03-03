@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<!--
+    Copyright (c) 2012-2014 Adobe Systems Incorporated. All rights reserved.
+
+    Licensed to the Apache Software Foundation (ASF) under one
+    or more contributor license agreements.  See the NOTICE file
+    distributed with this work for additional information
+    regarding copyright ownership.  The ASF licenses this file
+    to you under the Apache License, Version 2.0 (the
+    "License"); you may not use this file except in compliance
+    with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+     KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License.
+-->
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="format-detection" content="telephone=no" />
+        <meta name="msapplication-tap-highlight" content="no" />
+        <!-- WARNING: for iOS 7, remove the width=device-width and height=device-height attributes. See https://issues.apache.org/jira/browse/CB-4323 -->
+        <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
+        <link rel="stylesheet" type="text/css" href="css/index.css" />
+        <!-- Include meta tag to ensure proper rendering and touch zooming -->
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <!-- Include jQuery Mobile stylesheets -->
+        <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css">
+
+        <!-- Include the jQuery library -->
+        <script src="http://code.jquery.com/jquery-1.11.2.min.js"></script>
+
+        <!-- Include the jQuery Mobile library -->
+        <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+
+        <script src="SQLitePlugin.js"></script>
+
+        <script type="text/javascript">
+            var db;
+
+            $(document).ready(function(){
+                //document.addEventListener('deviceready', onDeviceReady, false);
+                initializeDatabase();
+                //$('#btnSubmit').click(btnSubmitClicked);
+                //$('#btnClear').click(btnClearClicked);
+            });
+
+            function btnSubmitClicked(){
+                var user = $('#user').val();
+                var description = $('#description').val();
+
+                addTODO(user, description);
+
+                $('#user').val('');
+                $('#description').val('');
+            }
+
+            function btnClearClicked(){
+                db.transaction(function(trans){ 
+                    trans.executeSql('DELETE FROM TODO');
+                    getAllTODOs(trans);
+                }, errorCB);
+            }
+
+            function onDeviceReady(){
+                $('.deviceNotReady').removeClass('deviceNotReady').addClass('deviceReady');
+                initializeDatabase();
+            }
+
+            function initializeDatabase() {
+                db = window.openDatabase("Database", "1.0", "Demo", 2 * 1024 * 1024);
+                window.localStorage.clear();
+                db.transaction(function(trans){ 
+                    trans.executeSql('CREATE TABLE IF NOT EXISTS TODO (id INTEGER PRIMARY KEY, user, description, time)');
+                    getAllTODOs(trans);
+                }, errorCB);
+            }
+
+            function getAllTODOs(trans) {
+                trans.executeSql('SELECT * FROM TODO', [], function(trans, results){
+                    var htmlRows = '';
+                    var len = results.rows.length;
+
+                    var fs_user = window.localStorage.getItem("flipswitch_user");
+                    var fs_time = window.localStorage.getItem("flipswitch_time");
+                    for (var i=0; i<len; i++){
+                        htmlRows += '<tr><td>';
+                        if(fs_user == "on") {
+                            htmlRows += results.rows.item(i).user;
+                        }
+                        htmlRows += '</td><td>' + results.rows.item(i).description + '</td><td>';
+                        if(fs_time == "on") {
+                            htmlRows += results.rows.item(i).time;
+                        }
+                        htmlRows += '</td></tr>';
+                    }
+
+                    $('#results tbody').html(htmlRows);
+                }, errorCB);
+            }
+
+            function addTODO(user, description){
+                var currentdate = new Date(); 
+                var time = currentdate.getDate() + "/"
+                            + (currentdate.getMonth()+1)  + "/" 
+                            + currentdate.getFullYear() + " "  
+                            + currentdate.getHours() + ":"  
+                            + currentdate.getMinutes() + ":" 
+                            + currentdate.getSeconds();
+
+                db.transaction(function(trans){ 
+                    trans.executeSql('INSERT INTO TODO (user, description, time) VALUES (?,?,?)', [ user, description, time ]);
+                    getAllTODOs(trans);
+                }, errorCB);
+
+            }
+
+            // Transaction error callback
+            //
+            function errorCB(err) {
+                alert("Error processing SQL: " + err.message);
+
+                return true;
+            }
+
+            function save() {
+                var flipswitch_user = $('#fs_user').val();
+                var flipswitch_time = $('#fs_time').val();
+
+                window.localStorage.setItem("flipswitch_user", flipswitch_user);
+                window.localStorage.setItem("flipswitch_time", flipswitch_time);
+
+                db.transaction(function(trans){ 
+                    trans.executeSql('SELECT * FROM TODO');
+                    getAllTODOs(trans);
+                }, errorCB);
+            }
+        </script>
+
+        <title>TODO</title>
+    </head>
+<body>
+    <div data-role="page" id="page1">
+        <div data-role="header">
+            <h1>TODO'S</h1>
+            <a href="#popupMenu" data-rel="popup" data-role="button" data-inline="true" data-transition="slidedown" data-icon="gear" class="ui-btn-right ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-right ui-icon-gear">Options</a>
+             <div data-role="popup" id="popupMenu" data-theme="d">
+                <ul data-role="listview" data-inset="true" style="min-width:210px;" data-theme="d">
+                    <li><a href="#page3" data-transition="slide">New TODO</a></li>
+                    <li><a href="#page2" data-transition="slide">Settings</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div data-role="content">
+            <table id="results">
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Description</th>
+                        <th>Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div data-role="footer" data-position="fixed" class="ui-bar">
+            <h1>Made By Youri van Heumen</h1>
+        </div>
+
+    </div>
+
+    <!-- Settings pages -->
+    <div data-role="page" id="page2">
+        <div data-role="header">
+            <h3>
+                Settings
+            </h3>
+            <a data-role="button" data-direction="reverse" data-rel="back" href="#page1" data-icon="arrow-l" data-iconpos="left">
+                Back
+            </a>
+        </div>
+        <div data-role="content">
+            <form>
+                <label for="flip-checkbox-1">Toon gebruiker bij TODO:</label>
+                <select id="fs_user" type="checkbox" data-role="flipswitch" name="flip-checkbox-1" id="flip-checkbox-1">
+                    <option value="off">Off</option>
+                    <option value="on">On</option>
+                </select>
+            </form>
+            <form>
+                <label for="flip-checkbox-1">Toon tijd bij TODO:</label>
+                <select id="fs_time" type="checkbox" data-role="flipswitch" name="flip-checkbox-1" id="flip-checkbox-1">
+                    <option value="off">Off</option>
+                    <option value="on">On</option>
+                </select>
+            </form>
+            <br/>
+            <button class="ui-btn" onClick="save()">Save</button>
+        </div>
+    </div>
+
+    <!-- New TODO pages -->
+    <div data-role="page" id="page3">
+        <div data-role="header">
+            <h3>
+                New TODO
+            </h3>
+            <a data-role="button" data-direction="reverse" data-rel="back" href="#page1" data-icon="arrow-l" data-iconpos="left">
+                Back
+            </a>
+        </div>
+        <div data-role="content">
+            <input type="text" id="user" name="user" id="text-basic" placeholder="user" value="">
+            <input type="text" id="description" name="description" id="text-basic" placeholder="description" value="">
+            <button class="ui-btn" onClick="btnSubmitClicked()">Add</button>
+
+        </div>
+    </div>
+
+</body>
+</html>
