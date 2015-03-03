@@ -38,159 +38,194 @@
 
         <!-- Include the jQuery Mobile library -->
         <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+
+        <script src="SQLitePlugin.js"></script>
+
         <script type="text/javascript">
-            function add() {
-                var name = $("#namemovie").val();
-                $("#list").append('<li><a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline">'+name+"</a></li>");
-                $("#namemovie").val("");
-                $("#dialog").dialog("close");
+            var db;
+
+            $(document).ready(function(){
+                //document.addEventListener('deviceready', onDeviceReady, false);
+                initializeDatabase();
+                //$('#btnSubmit').click(btnSubmitClicked);
+                //$('#btnClear').click(btnClearClicked);
+            });
+
+            function btnSubmitClicked(){
+                var user = $('#user').val();
+                var description = $('#description').val();
+
+                addTODO(user, description);
+
+                $('#user').val('');
+                $('#description').val('');
+            }
+
+            function btnClearClicked(){
+                db.transaction(function(trans){ 
+                    trans.executeSql('DELETE FROM TODO');
+                    getAllTODOs(trans);
+                }, errorCB);
+            }
+
+            function onDeviceReady(){
+                $('.deviceNotReady').removeClass('deviceNotReady').addClass('deviceReady');
+                initializeDatabase();
+            }
+
+            function initializeDatabase() {
+                db = window.openDatabase("Database", "1.0", "Demo", 2 * 1024 * 1024);
+                window.localStorage.clear();
+                db.transaction(function(trans){ 
+                    trans.executeSql('CREATE TABLE IF NOT EXISTS TODO (id INTEGER PRIMARY KEY, user, description, time)');
+                    getAllTODOs(trans);
+                }, errorCB);
+            }
+
+            function getAllTODOs(trans) {
+                trans.executeSql('SELECT * FROM TODO', [], function(trans, results){
+                    var htmlRows = '';
+                    var len = results.rows.length;
+
+                    var fs_user = window.localStorage.getItem("flipswitch_user");
+                    var fs_time = window.localStorage.getItem("flipswitch_time");
+                    for (var i=0; i<len; i++){
+                        htmlRows += '<tr><td>';
+                        if(fs_user == "on") {
+                            htmlRows += results.rows.item(i).user;
+                        }
+                        htmlRows += '</td><td>' + results.rows.item(i).description + '</td><td>';
+                        if(fs_time == "on") {
+                            htmlRows += results.rows.item(i).time;
+                        }
+                        htmlRows += '</td></tr>';
+                    }
+
+                    $('#results tbody').html(htmlRows);
+                }, errorCB);
+            }
+
+            function addTODO(user, description){
+                var currentdate = new Date(); 
+                var time = currentdate.getDate() + "/"
+                            + (currentdate.getMonth()+1)  + "/" 
+                            + currentdate.getFullYear() + " "  
+                            + currentdate.getHours() + ":"  
+                            + currentdate.getMinutes() + ":" 
+                            + currentdate.getSeconds();
+
+                db.transaction(function(trans){ 
+                    trans.executeSql('INSERT INTO TODO (user, description, time) VALUES (?,?,?)', [ user, description, time ]);
+                    getAllTODOs(trans);
+                }, errorCB);
+
+            }
+
+            // Transaction error callback
+            //
+            function errorCB(err) {
+                alert("Error processing SQL: " + err.message);
+
+                return true;
+            }
+
+            function save() {
+                var flipswitch_user = $('#fs_user').val();
+                var flipswitch_time = $('#fs_time').val();
+
+                window.localStorage.setItem("flipswitch_user", flipswitch_user);
+                window.localStorage.setItem("flipswitch_time", flipswitch_time);
+
+                db.transaction(function(trans){ 
+                    trans.executeSql('SELECT * FROM TODO');
+                    getAllTODOs(trans);
+                }, errorCB);
             }
         </script>
-        <title>Nacho Time</title>
+
+        <title>TODO</title>
     </head>
 <body>
     <div data-role="page" id="page1">
         <div data-role="header">
-            <h1>Nacho time!</h1>
+            <h1>TODO'S</h1>
             <a href="#popupMenu" data-rel="popup" data-role="button" data-inline="true" data-transition="slidedown" data-icon="gear" class="ui-btn-right ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-right ui-icon-gear">Options</a>
              <div data-role="popup" id="popupMenu" data-theme="d">
                 <ul data-role="listview" data-inset="true" style="min-width:210px;" data-theme="d">
-                    <li><a href="#dialog">Film toevoegen aan lijst</a></li>
+                    <li><a href="#page3" data-transition="slide">New TODO</a></li>
+                    <li><a href="#page2" data-transition="slide">Settings</a></li>
                 </ul>
             </div>
         </div>
 
-        <div data-role="tabs" id="tabs">
-          <div data-role="navbar">
-            <ul>
-                <li><a href="#films" data-ajax="false">Films</a></li>
-                <li><a href="#series" data-ajax="false">Series</a></li>
-                <li><a href="#tekenfilms" data-ajax="false">Tekenfilms</a></li>
-                <li><a href="#mijnfilms" data-ajax="false">Lijst</a></li>              
-            </ul>
-          </div>
-          <div id="films">
-            <ul data-role="listview" data-inset="true">
-                <li><a href="#page2" data-transition="flip" class="ui-btn ui-corner-all ui-shadow ui-btn-inline">Lord of the Rings</a></li>
-                <li><a href="#page3" data-transition="flip" class="ui-btn ui-corner-all ui-shadow ui-btn-inline">The Hunger Games</a></li>
-            </ul>
-          </div>
-          <div id="series">
-            <ul data-role="listview" data-inset="true">
-                <li><a href="#page4" data-transition="flip" class="ui-btn ui-corner-all ui-shadow ui-btn-inline">Under The Dome</a></li>
-                <li><a href="#page5" data-transition="flip" class="ui-btn ui-corner-all ui-shadow ui-btn-inline">Game Of Thrones</a></li>
-            </ul>
-          </div>
-          <div id="tekenfilms">
-            <ul data-role="listview" data-inset="true">
-                <li><a href="#page6" data-transition="flip" class="ui-btn ui-corner-all ui-shadow ui-btn-inline">Tekenfilm 1</a></li>
-                <li><a href="#page7" data-transition="flip" class="ui-btn ui-corner-all ui-shadow ui-btn-inline">Tekenfilm 2</a></li>
-            </ul>
-          </div>
-          <div id="mijnfilms">
-            <ul id="list" data-role="listview" data-inset="true">
-            </ul>
-          </div>
+        <div data-role="content">
+            <table id="results">
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Description</th>
+                        <th>Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr></tr>
+                </tbody>
+            </table>
         </div>
+
         <div data-role="footer" data-position="fixed" class="ui-bar">
             <h1>Made By Youri van Heumen</h1>
         </div>
 
     </div>
 
-    <!-- Film pages -->
+    <!-- Settings pages -->
     <div data-role="page" id="page2">
         <div data-role="header">
             <h3>
-                Lord of the Rings
+                Settings
             </h3>
             <a data-role="button" data-direction="reverse" data-rel="back" href="#page1" data-icon="arrow-l" data-iconpos="left">
                 Back
             </a>
         </div>
         <div data-role="content">
-            Information about the Lord of the Rings movies...
+            <form>
+                <label for="flip-checkbox-1">Toon gebruiker bij TODO:</label>
+                <select id="fs_user" type="checkbox" data-role="flipswitch" name="flip-checkbox-1" id="flip-checkbox-1">
+                    <option value="off">Off</option>
+                    <option value="on">On</option>
+                </select>
+            </form>
+            <form>
+                <label for="flip-checkbox-1">Toon tijd bij TODO:</label>
+                <select id="fs_time" type="checkbox" data-role="flipswitch" name="flip-checkbox-1" id="flip-checkbox-1">
+                    <option value="off">Off</option>
+                    <option value="on">On</option>
+                </select>
+            </form>
+            <br/>
+            <button class="ui-btn" onClick="save()">Save</button>
         </div>
     </div>
+
+    <!-- New TODO pages -->
     <div data-role="page" id="page3">
         <div data-role="header">
             <h3>
-                The Hunger Games
+                New TODO
             </h3>
             <a data-role="button" data-direction="reverse" data-rel="back" href="#page1" data-icon="arrow-l" data-iconpos="left">
                 Back
             </a>
         </div>
         <div data-role="content">
-            Information about The Hunger Games movies...
+            <input type="text" id="user" name="user" id="text-basic" placeholder="user" value="">
+            <input type="text" id="description" name="description" id="text-basic" placeholder="description" value="">
+            <button class="ui-btn" onClick="btnSubmitClicked()">Add</button>
+
         </div>
     </div>
 
-    <!-- Series pages -->
-    <div data-role="page" id="page4">
-        <div data-role="header">
-            <h3>
-                Under The Dome
-            </h3>
-            <a data-role="button" data-direction="reverse" data-rel="back" href="#page1" data-icon="arrow-l" data-iconpos="left">
-                Back
-            </a>
-        </div>
-        <div data-role="content">
-            Information about the serie Under The Dome...
-        </div>
-    </div>
-    <div data-role="page" id="page5">
-        <div data-role="header">
-            <h3>
-                Game Of Thrones
-            </h3>
-            <a data-role="button" data-direction="reverse" data-rel="back" href="#page1" data-icon="arrow-l" data-iconpos="left">
-                Back
-            </a>
-        </div>
-        <div data-role="content">
-            Information about the serie Game Of Thrones...
-        </div>
-    </div>
-
-    <!-- TekenFilm pages -->
-    <div data-role="page" id="page6">
-        <div data-role="header">
-            <h3>
-                Tekenfilm 1
-            </h3>
-            <a data-role="button" data-direction="reverse" data-rel="back" href="#page1" data-icon="arrow-l" data-iconpos="left">
-                Back
-            </a>
-        </div>
-        <div data-role="content">
-            Information...
-        </div>
-    </div>
-    <div data-role="page" id="page7">
-        <div data-role="header">
-            <h3>
-                Tekenfilm 2
-            </h3>
-            <a data-role="button" data-direction="reverse" data-rel="back" href="#page1" data-icon="arrow-l" data-iconpos="left">
-                Back
-            </a>
-        </div>
-        <div data-role="content">
-            Information...
-        </div>
-    </div>
-    <!-- Dialog only page -->
-    <div data-role="dialog" id="dialog">
-        <div data-role="header">
-            <h1>Film toevoegen aan lijst</h1>
-        </div>
-        <div data-role="content">
-            <label for="text-basic">Naam film:</label>
-            <input type="text" id="namemovie" name="namemovie" id="text-basic" value="">
-            <button class="ui-btn" onclick="add()">Voeg toe</button>
-        </div>
-    </div>
 </body>
 </html>
