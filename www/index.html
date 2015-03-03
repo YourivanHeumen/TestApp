@@ -47,25 +47,19 @@
         // device APIs are available
         //
         function onDeviceReady() {
-            alert("test1");
             navigator.geolocation.getCurrentPosition(onSuccess, onError);
-            alert("testX");
         }
 
         // onSuccess Geolocation
         //
         function onSuccess(position) {
-            alert("test2");
-            alert(position);
             var element = document.getElementById('geolocation');
-            element.innerHTML = 'Latitude: '           + position.coords.latitude              + '<br />' +
-                                'Longitude: '          + position.coords.longitude             + '<br />' +
-                                'Altitude: '           + position.coords.altitude              + '<br />' +
-                                'Accuracy: '           + position.coords.accuracy              + '<br />' +
-                                'Altitude Accuracy: '  + position.coords.altitudeAccuracy      + '<br />' +
-                                'Heading: '            + position.coords.heading               + '<br />' +
-                                'Speed: '              + position.coords.speed                 + '<br />' +
-                                'Timestamp: '          + position.timestamp                    + '<br />';
+            if (position.coords.latitude > 51.6850000 && position.coords.latitude < 51.6900000 && position.coords.longitude > 5.2860000 && position.coords.longitude < 5.2890000) 
+            {
+                element.innerHTML = 'Je bent op school';
+            } else {
+                element.innerHTML = 'Je bent niet op school';
+            }
         }
 
         // onError Callback receives a PositionError object
