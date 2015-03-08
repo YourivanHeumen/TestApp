@@ -78,7 +78,7 @@
     //
     function capturePhoto() {
       // Take picture using device camera and retrieve image as base64-encoded string
-      navigator.camera.getPicture(onPhotoDataSuccess, onFail, { quality: 50, cameraDirection: 1,
+      navigator.camera.getPicture(onPhotoDataSuccess, onFail, { quality: 50, cameraDirection:1,
         destinationType: destinationType.DATA_URL });
     }
 
@@ -92,7 +92,7 @@
   </head>
   <body onload="onDeviceReady()">
     <button onclick="capturePhoto();">Capture Photo</button> <br>
-    <img style="display:none;width:60px;height:60px;" id="smallImage" src="" />
+    <img style="display:none;width:300px;height:300px;" id="smallImage" src="" />
     <img style="display:none;" id="largeImage" src="" />
   </body>
 </html>
