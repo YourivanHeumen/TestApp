@@ -53,9 +53,12 @@
     // onSuccess: Get a snapshot of the current contacts
 
     function onSuccess(contacts) {
+      var table = "<table><tr>"
         for (var i = 0; i < contacts.length; i++) {
-            console.log("Display Name = " + contacts[i].displayName);
+            table += "<td>"+contacts[i].displayName+"</td>";
         }
+        table += "</tr></table>";
+        $('#table').innerHTML = table;
     }
 
     // onError: Failed to get the contacts
@@ -68,6 +71,6 @@
   </head>
   <body onload="onDeviceReady()">
     <h1>Example</h1>
-    <p>Find Contacts</p>
+    <div id="table"></div>
   </body>
 </html>
