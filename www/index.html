@@ -44,9 +44,10 @@
 
     function onDeviceReady() {
         var options = new ContactFindOptions();
-        options.filter = "Lieke van Heumen";
+        options.filter = "Lieke";
         var fields = ["displayName","name","phoneNumbers","emails","addresses"];
         navigator.contacts.find(fields, onSuccess, onError, options);
+        alert("test");
     }
 
     // onSuccess: Get a snapshot of the current contacts
