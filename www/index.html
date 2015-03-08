@@ -53,12 +53,13 @@
     // onSuccess: Get a snapshot of the current contacts
 
     function onSuccess(contacts) {
-      var table = "<table><tr>"
         for (var i = 0; i < contacts.length; i++) {
-            table += "<td>"+contacts[i].displayName+"</td>";
+            var myRow = "<tr><td>"+contacts[i].displayName+"</td></tr>";
+            $('#MyTable tr:last').after(myRow);
+            alert("123");
         }
-        table += "</tr></table>";
-        $('#table').innerHTML = table;
+            alert("456");
+
     }
 
     // onError: Failed to get the contacts
@@ -71,6 +72,10 @@
   </head>
   <body onload="onDeviceReady()">
     <h1>Example</h1>
-    <div id="table"></div>
+    <table id="MyTable" border="0" cellpadding="0" cellspacing="0">
+        <tr>
+          <td>test</td>
+        </tr>
+    </table>
   </body>
 </html>
