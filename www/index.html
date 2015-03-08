@@ -47,18 +47,15 @@
         options.filter = "Lieke";
         var fields = ["displayName","name","phoneNumbers","emails","addresses"];
         navigator.contacts.find(fields, onSuccess, onError, options);
-        alert("test");
     }
 
     // onSuccess: Get a snapshot of the current contacts
 
     function onSuccess(contacts) {
         for (var i = 0; i < contacts.length; i++) {
-            var myRow = "<tr><td>"+contacts[i].displayName+"</td></tr>";
+            var myRow = "<tr><td>"+contacts[i].displayName+"</td><td>"+contacts[i].name+"</td><td>"+contacts[i].phoneNumbers+"</td><td>"+contacts[i].emails+"</td><td>"+contacts[i].addresses+"</td></tr>";
             $('#MyTable tr:last').after(myRow);
-            alert("123");
         }
-            alert("456");
 
     }
 
