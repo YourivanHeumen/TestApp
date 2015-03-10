@@ -42,33 +42,37 @@
     <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
     <script type="text/javascript" charset="utf-8">
 
-    // Wait for device API libraries to load
-    //
-    document.addEventListener("deviceready", onDeviceReady, false);
-
-    // device APIs are available
-    //
     function onDeviceReady() {
-        navigator.compass.getCurrentHeading(onSuccess, onError);
+        var options = new ContactFindOptions();
+        options.filter = "";
+        var fields = ["*"];
+        navigator.contacts.find(fields, onSuccess, onError, options);
     }
 
-    // onSuccess: Get the current heading
-    //
-    function onSuccess(heading) {
-        alert('Heading: ' + heading.magneticHeading);
+    // onSuccess: Get a snapshot of the current contacts
+
+    function onSuccess(contacts) {
+        for (var i = 0; i < contacts.length; i++) {
+            var myRow = "<tr><td>"+contacts[i].displayName+"</td><td>"+contacts[i].name.formatted+"</td><td>"+contacts[i].phoneNumbers+"</td><td>"+contacts[i].emails+"</td><td>"+contacts[i].addresses+"</td></tr>";
+            $('#MyTable tr:last').after(myRow);
+        }
+
     }
 
-    // onError: Failed to get the heading
-    //
-    function onError(compassError) {
-        alert('Compass Error: ' + compassError.code);
-    }
+    // onError: Failed to get the contacts
 
+    function onError(contactError) {
+        alert('onError!');
+    }
 
     </script>
   </head>
   <body onload="onDeviceReady()">
     <h1>Example</h1>
-    <p>getCurrentHeading</p>
+    <table id="MyTable" border="0" cellpadding="0" cellspacing="0">
+        <tr>
+          <td>test</td>
+        </tr>
+    </table>
   </body>
 </html>
