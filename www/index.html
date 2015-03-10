@@ -53,7 +53,8 @@
 
     function onSuccess(contacts) {
         for (var i = 0; i < contacts.length; i++) {
-            var myRow = "<tr><td>"+contacts[i].displayName+"</td><td>"+contacts[i].name+"</td><td>"+contacts[i].phoneNumbers+"</td><td>"+contacts[i].emails+"</td><td>"+contacts[i].addresses+"</td></tr>";
+            alert(contacts[i].phoneNumbers.length);
+            var myRow = "<tr><td>"+contacts[i].displayName+"</td><td>"+contacts[i].name+"</td><td>"+contacts[i].phoneNumbers[0]+"</td><td>"+contacts[i].emails+"</td><td>"+contacts[i].addresses+"</td></tr>";
             $('#MyTable tr:last').after(myRow);
         }
 
